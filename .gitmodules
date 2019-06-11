@@ -1,0 +1,3 @@
+[submodule "Wumie_Server_Java"]
+	path = Wumie_Server_Java
+	url = https://github.com/claudiu-orosanu/Wumie_Server_Java.git
