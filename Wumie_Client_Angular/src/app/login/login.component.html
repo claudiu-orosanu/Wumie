@@ -1,0 +1,48 @@
+<div class="jumbotron" style="padding-bottom: 250px;">
+  <div class="container">
+    <div class="col-sm-8 col-sm-offset-2">
+
+      <div class="login-box">
+        <div class="login-logo">
+          <b>Wumie</b>
+        </div>
+        <!-- /.login-logo -->
+        <div class="login-box-body">
+          <p class="login-box-msg">Sign in to start your session
+            <a class="text-center" routerLink="/register" style="font-size: 15px">New to Wumie? Go make an
+              account!</a>
+          </p>
+
+          <p *ngIf="showError" class="alert alert-danger" style="font-size: 15px; margin-top: -6%">
+            Username or password is incorrect.
+          </p>
+
+          <form *ngIf="myForm" [formGroup]="myForm">
+            <div class="form-group has-feedback">
+              <input type="text" formControlName="usernameOrEmail" class="form-control" placeholder="Email or username">
+              <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+              <input formControlName="password" type="password" class="form-control" placeholder="Password">
+              <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+
+            <div class="row">
+              <!-- /.col -->
+              <div class="pull-right" style="margin-right: 1.2em">
+                <button type="button" [disabled]="!myForm.valid" (click)="login()" class="btn btn-primary btn-block btn-flat">
+                  Sign In
+                </button>
+              </div>
+              <!-- /.col -->
+            </div>
+
+          </form>
+
+
+        </div>
+        <!-- /.login-box-body -->
+      </div>
+    </div>
+  </div>
+</div>

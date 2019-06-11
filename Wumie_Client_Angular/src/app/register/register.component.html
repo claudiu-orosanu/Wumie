@@ -1,0 +1,59 @@
+ <div class="jumbotron" style="padding-bottom: 190px;">
+  <div class="container">
+    <div class="col-sm-8 col-sm-offset-2">
+
+      <div class="login-box" style="margin-top: 0; width: 500px">
+        <div class="login-logo">
+          <b>Wumie</b>
+        </div>
+        <!-- /.login-logo -->
+        <div class="login-box-body">
+          <p class="login-box-msg">Sign up to Wumie <br>
+            <a class="text-center" routerLink = "/login" style="font-size: 15px; cursor: pointer">Already have an account? Log in!</a>
+          </p>
+
+          <p *ngIf="showError" class="alert alert-danger" style="font-size: 15px; margin-top: -6%">
+            {{messageError}}
+          </p>
+
+          <p *ngIf="showInfo" class="alert alert-success" style="font-size: 15px; margin-top: -6%">
+            Your registration was submitted.
+          </p>
+
+          <form *ngIf="myForm" [formGroup]="myForm">
+            <div class="form-group has-feedback">
+              <input formControlName="firstName" class="form-control" placeholder="First Name">
+              <span class="glyphicon glyphicon-user form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+              <input formControlName="lastName" class="form-control" placeholder="Last Name">
+              <span class="glyphicon glyphicon-user form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+              <input formControlName="username" class="form-control" placeholder="Username">
+              <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+              <input type="email" formControlName="email" class="form-control" placeholder="Email">
+              <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+              <input formControlName="password" type="password" class="form-control" placeholder="Password">
+              <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+              <div class="col-xs-4 pull-right">
+                <button type="button" [disabled]= "!myForm.valid" (click)="register()" class="btn btn-primary btn-block btn-flat">Register</button>
+              </div>
+            </div>
+
+          </form>
+
+          <!-- /.social-auth-links -->
+
+        </div>
+        <!-- /.login-box-body -->
+      </div>
+    </div>
+  </div>
+</div>

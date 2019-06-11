@@ -1,0 +1,515 @@
+<section class="content">
+
+  <div class="row">
+    <div class="col-md-3">
+      <div class="input-group">
+        <span class="input-group-addon"><i class="fa fa-search"></i></span>
+        <input type="text" #movieSearchBox id="movie-search-box" (keyup)="searchMovie(movieSearchBox.value)"
+               style="height: 36px" class="form-control" placeholder="Movie Title">
+      </div>
+    </div>
+    <div class="col-md-2 text-right">
+      <app-dropdown style="cursor: pointer" [width]="125" [values]="filterValues" [selectedElement]="selectedFilter"
+                    (select)="setFilter($event)"></app-dropdown>
+    </div>
+    <div class="col-md-2 text-right">
+      <app-dropdown style="cursor: pointer" [width]="125" [values]="genreValues" [selectedElement]="selectedGenreFilter"
+                    (select)="setGenreFilter($event)"></app-dropdown>
+    </div>
+    <div *ngIf="userIsAdmin" class="col-md-5 text-right">
+      <button type="button" class="btn btn-default" data-toggle="modal" (click)="initCreateMovieForm()"
+              data-target="#create-movie-modal">
+        <i class="fa fa-plus" aria-hidden="true"></i> Add Movie
+      </button>
+    </div>
+  </div>
+
+  <!--Movies-->
+  <div class="row">
+
+    <table class="table table-hover" style="margin:2em">
+      <thead>
+      <tr>
+        <th></th>
+        <th>#</th>
+        <th>Title</th>
+        <th>Genre</th>
+        <th (click)="sortReleaseDate()">Release Date</th>
+        <th (click)="sortBoxOffice()">Box Office</th>
+        <th (click)="sortActorsCount()">Actors</th>
+        <th></th>
+        <th *ngIf="userIsAdmin"></th>
+        <th *ngIf="userIsAdmin"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let movie of filteredMovies.slice( currentPage * moviesPerPage, currentPage * moviesPerPage + moviesPerPage); let i = index">
+        <td><i *ngIf="movie.watched" class="fa fa-eye" aria-hidden="true"></i></td>
+        <td>{{i + 1}}</td>
+        <td>{{movie.title}}</td>
+        <td>{{translateMovieGenre(movie.genre)}}</td>
+        <td>{{movie.releaseDate | date:'mediumDate'}}</td>
+        <td>{{'$'+movie.boxOffice}}</td>
+        <td>{{movie.actorsCount + ' actor(s)'}}</td>
+        <td>
+          <button class="btn btn-primary" data-toggle="modal" (click)="initViewMovieForm(movie)"
+                  data-target="#view-movie-modal">
+            <i class="fa fa-info-circle" aria-hidden="true" ></i> Details
+            </button>
+        </td>
+        <td *ngIf="userIsAdmin">
+          <a class="btn btn-info"  data-toggle="modal" (click)="initEditMovieForm(movie)"
+             data-target="#edit-movie-modal">
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+        </td>
+        <td *ngIf="userIsAdmin">
+          <button class="btn btn-danger" data-toggle="modal" (click)="showModalDeleteMovie(movie.id)"
+                  data-target="#delete-movie-confirmation">
+            <i class="fa fa-trash" aria-hidden="true"></i> Delete
+          </button>
+        </td>
+        <td *ngIf="userIsAdmin">
+          <button class="btn" style="background-color: #605ca8; color: #fffeff" data-toggle="modal" (click)="initAddActorsForm(movie)"
+                  data-target="#add-actors-movie-modal">
+            <i class="fa fa-user-plus" aria-hidden="true"></i> Add actors
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="row">
+    <p-paginator [rows]="moviesPerPage" [totalRecords]="filteredMovies.length" [first]="moviesPerPage * currentPage"
+                 (onPageChange)="changePage($event)"></p-paginator>
+  </div>
+
+</section>
+
+
+
+
+
+
+<!--Modal windows-->
+
+<!--Add movie-->
+<div *ngIf="showModalCreateMovie" class="modal fade" id="create-movie-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add movie</h4>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="row">
+          <form #createMovieForm="ngForm">
+
+            <div class="col-md-6">
+              <!--Name-->
+              <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title"
+                       required minlength="2" maxlength="50"
+                       [(ngModel)]="movieFormObject.title" name="title"
+                       #title="ngModel">
+                <div *ngIf="title.invalid && (title.dirty || title.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="title.errors.required">
+                    Title is required.
+                  </div>
+                  <div *ngIf="title.errors.minlength">
+                    Title must be at least 2 characters long.
+                  </div>
+                  <div *ngIf="title.errors.maxlength">
+                    Title must be at least 50 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <!--Runtime-->
+              <div class="form-group">
+                <label for="runtime">Runtime (minutes)</label>
+                <input class="form-control" id="runtime"
+                       type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57'
+                       required max="500"
+                       [(ngModel)]="movieFormObject.runtime" name="runtime"
+                       #runtime="ngModel">
+                <div *ngIf="runtime.invalid && (runtime.dirty || runtime.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="runtime.errors.required">
+                    Runtime is required.
+                  </div>
+                  <div *ngIf="runtime.errors.max">
+                    Runtime can be at most 500 minutes
+                  </div>
+                </div>
+              </div>
+
+              <!--Genre-->
+              <div class="form-group">
+                <label for="add-movie-genre">Genre</label>
+                <select class="form-control" id="add-movie-genre" name="genre" [(ngModel)]="movieFormObject.genre">
+                  <option *ngFor="let genre of genres; let i = index" value="{{i}}">{{genre}}</option>
+                </select>
+              </div>
+
+              <!--Release Date-->
+              <div class="form-group">
+                <label for="movie-release-date">Release Date</label>
+                <input type="text" id="movie-release-date"
+                       class="form-control" name="movie-release-date"
+                       [(ngModel)]="movieFormObject.releaseDate"
+                       bsDatepicker>
+              </div>
+
+            </div>
+
+            <div class="col-md-6">
+              <!--Description-->
+              <div class="form-group">
+                <label for="plot">Plot</label>
+                <textarea rows="8" class="form-control" id="plot"
+                          required maxlength="1024"
+                          [(ngModel)]="movieFormObject.plot" name="plot"
+                          #plot="ngModel">
+              </textarea>
+                <div *ngIf="plot.invalid && (plot.dirty || plot.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="plot.errors.required">
+                    Plot is required.
+                  </div>
+                  <div *ngIf="plot.errors.maxlength">
+                    Plot must be at most 1024 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <!--Box Office-->
+              <div class="form-group">
+                <label for="boxOffice">Box Office</label>
+                <input class="form-control" id="boxOffice"
+                       type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57'
+                       [(ngModel)]="movieFormObject.boxOffice" name="boxOffice"
+                       #boxOffice="ngModel">
+                <div *ngIf="boxOffice.invalid && (boxOffice.dirty || boxOffice.touched)"
+                     class="alert alert-danger">
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" [disabled]="!createMovieForm.valid"
+                  (click)="createMovie(createMovieForm.value)">Add movie
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Edit movie-->
+<div *ngIf="showModalEditMovie" class="modal fade" id="edit-movie-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Edit movie</h4>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="row">
+          <form #editMovieForm="ngForm">
+
+            <div class="col-md-6">
+              <!--Name-->
+              <div class="form-group">
+                <label for="edit-movie-title">Title</label>
+                <input type="text" class="form-control" id="edit-movie-title"
+                       required minlength="2" maxlength="50"
+                       [(ngModel)]="editMovieFormObject.title" name="title"
+                       #title="ngModel">
+                <div *ngIf="title.invalid && (title.dirty || title.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="title.errors.required">
+                    Title is required.
+                  </div>
+                  <div *ngIf="title.errors.minlength">
+                    Title must be at least 2 characters long.
+                  </div>
+                  <div *ngIf="title.errors.maxlength">
+                    Title must be at least 50 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <!--Runtime-->
+              <div class="form-group">
+                <label for="edit-movie-runtime">Runtime (minutes)</label>
+                <input class="form-control" id="edit-movie-runtime"
+                       type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57'
+                       required max="500"
+                       [(ngModel)]="editMovieFormObject.runtime" name="runtime"
+                       #runtime="ngModel">
+                <div *ngIf="runtime.invalid && (runtime.dirty || runtime.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="runtime.errors.required">
+                    Runtime is required.
+                  </div>
+                  <div *ngIf="runtime.errors.max">
+                    Runtime can be at most 500 minutes
+                  </div>
+                </div>
+              </div>
+
+              <!--Genre-->
+              <div class="form-group">
+                <label for="edit-movie-genre">Genre</label>
+                <select class="form-control" id="edit-movie-genre" name="genre" [(ngModel)]="editMovieFormObject.genre">
+                  <option *ngFor="let genre of genres; let i = index" value="{{i}}">{{genre}}</option>
+                </select>
+              </div>
+
+              <!--Release Date-->
+              <div class="form-group">
+                <label for="edit-movie-release-date">Release Date</label>
+                <input type="text" id="edit-movie-release-date"
+                       class="form-control" name="movie-release-date"
+                       [(ngModel)]="editMovieFormObject.releaseDate"
+                       bsDatepicker>
+              </div>
+
+            </div>
+
+            <div class="col-md-6">
+              <!--Description-->
+              <div class="form-group">
+                <label for="edit-movie-plot">Plot</label>
+                <textarea rows="8" class="form-control" id="edit-movie-plot"
+                          required maxlength="1024"
+                          [(ngModel)]="editMovieFormObject.plot" name="plot"
+                          #plot="ngModel">
+              </textarea>
+                <div *ngIf="plot.invalid && (plot.dirty || plot.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="plot.errors.required">
+                    Plot is required.
+                  </div>
+                  <div *ngIf="plot.errors.maxlength">
+                    Plot must be at most 1024 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <!--Box Office-->
+              <div class="form-group">
+                <label for="edit-movie-boxOffice">Box Office</label>
+                <input class="form-control" id="edit-movie-boxOffice"
+                       type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57'
+                       [(ngModel)]="editMovieFormObject.boxOffice" name="boxOffice"
+                       #boxOffice="ngModel">
+                <div *ngIf="boxOffice.invalid && (boxOffice.dirty || boxOffice.touched)"
+                     class="alert alert-danger">
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" [disabled]="!editMovieForm.valid"
+                  (click)="editMovie(editMovieForm.value)">Edit movie
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--View movie-->
+<div *ngIf="showModalViewMovie" class="modal fade" id="view-movie-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">View movie details</h4>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="row">
+          <form>
+
+            <div class="col-md-6">
+              <!--Name-->
+              <div class="form-group">
+                <label for="view-movie-title">Title</label>
+                <input type="text" class="form-control" id="view-movie-title" disabled
+                       [(ngModel)]="viewMovieFormObject.title" name="view-movie-title">
+              </div>
+
+              <!--Runtime-->
+              <div class="form-group">
+                <label for="view-movie-runtime">Runtime (minutes)</label>
+                <input class="form-control" id="view-movie-runtime"
+                       type="text" disabled
+                       [(ngModel)]="viewMovieFormObject.runtime"  name="view-movie-runtime">
+              </div>
+
+              <!--Genre-->
+              <div class="form-group">
+                <label for="view-movie-genre">Genre</label>
+                <input type="text" class="form-control" id="view-movie-genre" disabled
+                       [value]="translateMovieGenre(viewMovieFormObject.genre)"  name="view-movie-genre">
+              </div>
+
+              <!--Release Date-->
+              <div class="form-group">
+                <label for="view-movie-release-date">Release Date</label>
+                <input type="text" id="view-movie-release-date" disabled
+                       class="form-control" [(ngModel)]="viewMovieFormObject.releaseDate"  name="view-movie-release-date">
+              </div>
+
+            </div>
+
+            <div class="col-md-6">
+              <!--Plot-->
+              <div class="form-group">
+                <label for="view-movie-plot">Plot</label>
+                <textarea rows="8" class="form-control" id="view-movie-plot" disabled
+                          [(ngModel)]="viewMovieFormObject.plot" name="view-movie-plot">
+              </textarea>
+              </div>
+
+              <!--Box Office-->
+              <div class="form-group">
+                <label for="view-movie-boxOffice">Box Office</label>
+                <input class="form-control" id="view-movie-boxOffice" type="text" disabled
+                       [(ngModel)]="viewMovieFormObject.boxOffice" name="view-movie-boxOffice">
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!--Actors in this movie-->
+        <div class="row">
+          <div style="margin: 2em" class="panel panel-info">
+            <div class="panel-heading">Actors</div>
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th>Birth Date</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let actor of movieDetails.actors">
+                <td>{{actor.firstName + ' ' + actor.lastName}}</td>
+                <td>{{actor.birthDate | date:'medium'}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" (click)="addMovieToWatchlist()">
+            {{viewMovieFormObject.watched ?  'Remove from watchlist' : 'Add to watchlist'}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Delete movie confirmation modal-->
+<div *ngIf="showModalDeleteMovieConfirmation" class="modal fade" id="delete-movie-confirmation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Delete movie</h4>
+      </div>
+      <div class="modal-body">
+        <h5>Are you sure you want to delete this movie?</h5>
+      </div>
+
+      <!--Buttons-->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" (click)="deleteMovie()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Add actors modal-->
+<div *ngIf="showModalAddActors" class="modal fade" id="add-actors-movie-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add actors to movie</h4>
+      </div>
+
+      <div class="modal-body">
+
+        <!--Actors in this movie-->
+        <div class="row">
+          <div style="margin: 2em" class="panel panel-info">
+            <div class="panel-heading">Actors</div>
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th>Birth Date</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let actor of addActorsFormObject" [style.background-color]="actor.selected ? '#87cefa' : ''"
+                  (click)="actor.selected ? actor.selected = false : actor.selected = true">
+                <td>{{actor.firstName + ' ' + actor.lastName}}</td>
+                <td>{{actor.birthDate | date:'mediumDate'}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" (click)="addActorsToMovie()">Add actors
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

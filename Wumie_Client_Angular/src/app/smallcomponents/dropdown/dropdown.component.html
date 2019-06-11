@@ -1,0 +1,10 @@
+<div class="input-group btn-group">
+  <button #b  [style.width.px]="width" style="text-align: left; border-radius: 4px 0 0 4px" type="button" class="btn btn-default btn-flat dropdown-toggle"  data-toggle="dropdown" [disabled]="isDisabled"> {{selectedElement.name}}</button>
+    <button [disabled]="isDisabled" #caret type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+  <ul class="dropdown-menu" [ngStyle]="{'width': b.style.width }" role="menu">
+    <li *ngFor="let value of values" (click)="selectItem(value)"><a >{{value.name}}</a></li>
+  </ul>
+</div>

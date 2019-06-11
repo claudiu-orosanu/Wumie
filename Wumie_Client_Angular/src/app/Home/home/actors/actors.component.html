@@ -1,0 +1,334 @@
+<section class="content">
+
+  <div class="row">
+    <div class="col-md-3">
+      <div class="input-group">
+        <span class="input-group-addon"><i class="fa fa-search"></i></span>
+        <input type="text" #actorSearchBox id="actor-search-box" (keyup)="searchActor(actorSearchBox.value)"
+               style="height: 36px" class="form-control" placeholder="Actor Name">
+      </div>
+    </div>
+    <div *ngIf="userIsAdmin" class="col-md-9 text-right">
+      <button type="button" class="btn btn-default" data-toggle="modal" (click)="initCreateActorForm()"
+              data-target="#create-actor-modal">
+        <i class="fa fa-plus" aria-hidden="true"></i> Add Actor
+      </button>
+    </div>
+  </div>
+
+  <!--Actors-->
+  <div class="row">
+
+    <table class="table table-hover" style="margin:2em">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th (click)="sortBirthDate()">Birth Date</th>
+        <th (click)="sortByMovieCount()">Movies</th>
+        <th></th>
+        <th *ngIf="userIsAdmin"></th>
+        <th *ngIf="userIsAdmin"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let actor of filteredActors.slice( currentPage * actorsPerPage, currentPage * actorsPerPage + actorsPerPage); let i = index">
+        <td>{{i + 1}}</td>
+        <td>{{actor.firstName + ' ' + actor.lastName}}</td>
+        <td>{{actor.birthDate | date:'medium'}}</td>
+        <td>{{actor.moviesCount + ' movie(s)'}}</td>
+        <td>
+          <button class="btn btn-primary" data-toggle="modal" (click)="initViewActorForm(actor)"
+                  data-target="#view-actor-modal">
+            <i class="fa fa-info-circle" aria-hidden="true" ></i> Details
+            </button>
+        </td>
+        <td  *ngIf="userIsAdmin">
+          <a class="btn btn-info"  data-toggle="modal" (click)="initEditActorForm(actor)"
+             data-target="#edit-actor-modal">
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+        </td>
+        <td  *ngIf="userIsAdmin">
+          <button class="btn btn-danger" data-toggle="modal" (click)="showModalDeleteActor(actor.id)"
+                  data-target="#delete-actor-confirmation">
+            <i class="fa fa-trash" aria-hidden="true"></i> Delete
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div class="row">
+      <p-paginator [rows]="actorsPerPage" [totalRecords]="filteredActors.length" [first]="actorsPerPage * currentPage"
+                   (onPageChange)="changePage($event)"></p-paginator>
+    </div>
+
+  </div>
+
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+<!--Modal windows-->
+
+<!--Add actor-->
+<div *ngIf="showModalCreateActor" class="modal fade" id="create-actor-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add actor</h4>
+      </div>
+
+      <div class="modal-body">
+
+          <form #createActorForm="ngForm">
+
+              <!--Name-->
+              <div class="form-group">
+                <label for="createActorFirstName">First Name</label>
+                <input type="text" class="form-control" id="createActorFirstName"
+                       required minlength="2" maxlength="50"
+                       [(ngModel)]="createActorFormObject.firstName" name="createActorFirstName"
+                       #createActorFirstName="ngModel">
+                <div *ngIf="createActorFirstName.invalid && (createActorFirstName.dirty || createActorFirstName.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="createActorFirstName.errors.required">
+                    First name is required.
+                  </div>
+                  <div *ngIf="createActorFirstName.errors.minlength">
+                    First name must be at least 2 characters long.
+                  </div>
+                  <div *ngIf="createActorFirstName.errors.maxlength">
+                    First name must be at least 50 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="createActorLastName">Last Name</label>
+                <input type="text" class="form-control" id="createActorLastName"
+                       required minlength="2" maxlength="50"
+                       [(ngModel)]="createActorFormObject.lastName" name="createActorLastName"
+                       #createActorLastName="ngModel">
+                <div *ngIf="createActorLastName.invalid && (createActorLastName.dirty || createActorLastName.touched)"
+                     class="alert alert-danger">
+                  <div *ngIf="createActorLastName.errors.required">
+                    Last name is required.
+                  </div>
+                  <div *ngIf="createActorLastName.errors.minlength">
+                    Last name must be at least 2 characters long.
+                  </div>
+                  <div *ngIf="createActorLastName.errors.maxlength">
+                    Last name must be at least 50 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <!--Birth Date-->
+              <div class="form-group">
+                <label for="create-actor-birthDate">Birth Date</label>
+                <input type="text" id="create-actor-birthDate"
+                       class="form-control" name="create-actor-releaseDate"
+                       [(ngModel)]="createActorFormObject.birthDate"
+                       bsDatepicker>
+              </div>
+
+          </form>
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" [disabled]="!createActorForm.valid"
+                  (click)="createActor(createActorForm.value)">Add actor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Edit actor-->
+<div *ngIf="showModalEditActor" class="modal fade" id="edit-actor-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Edit actor</h4>
+      </div>
+
+      <div class="modal-body">
+
+          <form #editActorForm="ngForm">
+
+            <!--Name-->
+            <div class="form-group">
+              <label for="editActorFirstName">First Name</label>
+              <input type="text" class="form-control" id="editActorFirstName"
+                     required minlength="2" maxlength="50"
+                     [(ngModel)]="editActorFormObject.firstName" name="editActorFirstName"
+                     #editActorFirstName="ngModel">
+              <div *ngIf="editActorFirstName.invalid && (editActorFirstName.dirty || editActorFirstName.touched)"
+                   class="alert alert-danger">
+                <div *ngIf="editActorFirstName.errors.required">
+                  First name is required.
+                </div>
+                <div *ngIf="editActorFirstName.errors.minlength">
+                  First name must be at least 2 characters long.
+                </div>
+                <div *ngIf="editActorFirstName.errors.maxlength">
+                  First name must be at least 50 characters long.
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="editActorLastName">Last Name</label>
+              <input type="text" class="form-control" id="editActorLastName"
+                     required minlength="2" maxlength="50"
+                     [(ngModel)]="editActorFormObject.lastName" name="editActorLastName"
+                     #editActorLastName="ngModel">
+              <div *ngIf="editActorLastName.invalid && (editActorLastName.dirty || editActorLastName.touched)"
+                   class="alert alert-danger">
+                <div *ngIf="editActorLastName.errors.required">
+                  Last name is required.
+                </div>
+                <div *ngIf="editActorLastName.errors.minlength">
+                  Last name must be at least 2 characters long.
+                </div>
+                <div *ngIf="editActorLastName.errors.maxlength">
+                  Last name must be at least 50 characters long.
+                </div>
+              </div>
+            </div>
+
+            <!--Birth Date-->
+            <div class="form-group">
+              <label for="edit-actor-birthDate">Birth Date</label>
+              <input type="text" id="edit-actor-birthDate"
+                     class="form-control" name="edit-actor-releaseDate"
+                     [(ngModel)]="editActorFormObject.birthDate"
+                     bsDatepicker>
+            </div>
+
+          </form>
+      </div>
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button style="margin-right: 2em" type="button" class="btn btn-primary" [disabled]="!editActorForm.valid"
+                  (click)="editActor(editActorForm.value)">Edit actor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--View actor-->
+<div *ngIf="showModalViewActor" class="modal fade" id="view-actor-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">View actor details</h4>
+      </div>
+
+      <div class="modal-body">
+
+          <form>
+
+            <!--First Name-->
+              <div class="form-group">
+                <label for="view-actor-firstName">First Name</label>
+                <input type="text" class="form-control" id="view-actor-firstName" disabled
+                       [(ngModel)]="viewActorFormObject.firstName" name="view-actor-firstName">
+              </div>
+
+              <!--Last Name-->
+              <div class="form-group">
+                <label for="view-actor-lastName">Last Name</label>
+                <input type="text" class="form-control" id="view-actor-lastName" disabled
+                       [(ngModel)]="viewActorFormObject.lastName" name="view-actor-lastName">
+              </div>
+
+              <!--Release Date-->
+              <div class="form-group">
+                <label for="view-actor-birthDate">Birth Date</label>
+                <input type="text" id="view-actor-birthDate" disabled
+                       class="form-control" [(ngModel)]="viewActorFormObject.birthDate" name="view-actor-birthDate">
+              </div>
+
+
+          </form>
+      </div>
+
+      <!--Movies that this actor played-->
+      <div class="row">
+        <div style="margin: 2em" class="panel panel-info">
+          <div class="panel-heading">Movies</div>
+          <table class="table table-hover">
+            <thead>
+            <tr>
+              <th>Title</th>
+              <th>Genre</th>
+              <th>Release Date</th>
+              <th>Box Office</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let movie of actorDetails.movies">
+              <td>{{movie.title}}</td>
+              <td>{{translateMovieGenre(movie.genre)}}</td>
+              <td>{{movie.releaseDate | date:'medium'}}</td>
+              <td>{{'$'+movie.boxOffice}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="modal-footer">
+          <button style="margin-left: 2em" type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Delete actor confirmation modal-->
+<div *ngIf="showModalDeleteActorConfirmation" class="modal fade" id="delete-actor-confirmation">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Delete actor</h4>
+      </div>
+      <div class="modal-body">
+        <h5>Are you sure you want to delete this actor?</h5>
+      </div>
+
+      <!--Buttons-->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" (click)="deleteActor()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
