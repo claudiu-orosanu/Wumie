@@ -5,7 +5,7 @@ import {LoginComponent} from './login/login.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {routing} from "./app.routing-module";
-import {AuthGuard} from "./AuthentificationGuard/auth.guard";
+import {AuthGuard} from "./AuthenticationGuard/auth.guard";
 import {LoginService} from "./login/login.service";
 import {DropdownModule} from "./smallcomponents/dropdown/dropdown.module";
 import {RegisterComponent} from './register/register.component';

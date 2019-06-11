@@ -115,6 +115,8 @@ export class MoviesComponent implements OnInit {
 
   applySearchAndFilter() {
 
+    // todo move filtering / searching / pagination to backend
+
     // apply filtering
     switch (this.selectedFilter.id) {
       case MovieFilterValues.ALL_MOVIES :

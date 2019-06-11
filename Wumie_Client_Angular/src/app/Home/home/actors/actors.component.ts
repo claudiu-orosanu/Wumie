@@ -83,6 +83,8 @@ export class ActorsComponent implements OnInit {
 
   applySearchAndFilter() {
 
+    // todo move filtering / searching / pagination to backend
+
     // apply searching
     this.filteredActors = this.allActors.filter(actor => {
       let lowerCaseName = (actor.firstName + ' ' + actor.lastName).toLowerCase();

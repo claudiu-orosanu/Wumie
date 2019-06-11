@@ -1,6 +1,6 @@
 import {RouterModule, Routes} from "@angular/router";
 import {HomeComponent} from "./home.component";
-import {AuthGuard} from "../../AuthentificationGuard/auth.guard";
+import {AuthGuard} from "../../AuthenticationGuard/auth.guard";
 import {MoviesComponent} from "./movies/movies.component";
 import {ActorsComponent} from "./actors/actors.component";
 
