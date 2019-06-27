@@ -1,5 +1,15 @@
-### **Wumie** is a web application for managing movies.
+### Wumie is a web application for managing movies.
 ---
+
+- [Functionalities](#functionalities)
+    + [Normal User](#normal-user)
+    + [Admin](#admin)
+- [Implementation](#implementation)
+    + [Exposed API endpoints](#exposed-api-endpoints)
+        * [Movies](#movies)
+        * [Actors](#actors)
+        * [Auth](#auth)
+- [Screenshots](#screenshots)
 
 ## Functionalities
 
