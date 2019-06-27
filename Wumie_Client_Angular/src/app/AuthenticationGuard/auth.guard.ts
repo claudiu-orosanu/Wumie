@@ -17,12 +17,11 @@ export class AuthGuard implements CanActivate {
 
 
     // check if token has expired
-    let tokenExpiry = +localStorage.getItem('tokenExpiresIn');
-    let tokenCreatedAt = +localStorage.getItem('tokenCreatedAt');
+    let tokenExpiryDate = +localStorage.getItem('tokenExpiresIn');
 
     let now = Math.round((new Date()).getTime() / 1000); // unix timestamp
 
-    if(now - tokenExpiry > tokenCreatedAt) {
+    if(now - tokenExpiryDate > 0) {
       this.router.navigate(['/login']);
       return false;
     }

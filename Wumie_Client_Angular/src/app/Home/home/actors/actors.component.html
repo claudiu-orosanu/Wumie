@@ -35,7 +35,7 @@
       <tr *ngFor="let actor of filteredActors.slice( currentPage * actorsPerPage, currentPage * actorsPerPage + actorsPerPage); let i = index">
         <td>{{i + 1}}</td>
         <td>{{actor.firstName + ' ' + actor.lastName}}</td>
-        <td>{{actor.birthDate | date:'medium'}}</td>
+        <td>{{actor.birthDate | date:'mediumDate'}}</td>
         <td>{{actor.moviesCount + ' movie(s)'}}</td>
         <td>
           <button class="btn btn-primary" data-toggle="modal" (click)="initViewActorForm(actor)"
@@ -293,7 +293,7 @@
             <tr *ngFor="let movie of actorDetails.movies">
               <td>{{movie.title}}</td>
               <td>{{translateMovieGenre(movie.genre)}}</td>
-              <td>{{movie.releaseDate | date:'medium'}}</td>
+              <td>{{movie.releaseDate | date:'mediumDate'}}</td>
               <td>{{'$'+movie.boxOffice}}</td>
             </tr>
             </tbody>
